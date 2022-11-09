@@ -1,5 +1,6 @@
 import React from 'react';
 import { getCategories } from '../services/api';
+import { Link } from 'react-router-dom';
 
 class Home extends React.Component {
   state = { categorys: [] };
@@ -28,6 +29,7 @@ class Home extends React.Component {
             </button>
           ))}
         </div>
+        <Link data-testid="shopping-cart-button" to="/cart">Carrinho</Link>
       </div>
     );
   }
