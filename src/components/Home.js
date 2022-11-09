@@ -1,15 +1,20 @@
 import React from 'react';
-import { getProductByQuery } from '../services/api';
 import { Link } from 'react-router-dom';
-
+import { getCategories, getProductByQuery } from '../services/api';
 
 class Home extends React.Component {
   state = {
+    categorys: [],
     productInput: '',
     buttonDisable: true,
     filterAPI: [],
     test: true,
   };
+
+  async componentDidMount() {
+    const valores = await getCategories();
+    this.setState({ categorys: valores });
+  }
 
   callAPI = async () => {
     const { productInput, filterAPI } = this.state;
@@ -47,12 +52,24 @@ class Home extends React.Component {
   };
 
   render() {
-    const { buttonDisable, filterAPI, test } = this.state;
+    const { categorys, buttonDisable, filterAPI, test } = this.state;
     return (
       <div>
-        <p data-testid="home-initial-message">
+        <div data-testid="home-initial-message">
           Digite algum termo de pesquisa ou escolha uma categoria.
-        </p>
+        </div>
+        <div>
+          {categorys.map((category) => (
+            <button
+              key={ category.id }
+              type="button"
+              data-testid="category"
+            >
+              {category.name}
+
+            </button>
+          ))}
+        </div>
         <input
           type="text"
           data-testid="query-input"
