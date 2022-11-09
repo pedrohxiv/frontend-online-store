@@ -16,13 +16,25 @@ class Home extends React.Component {
     this.setState({ categorys: valores });
   }
 
-  callAPI = async () => {
-    const { productInput, filterAPI } = this.state;
-    const API = await getProductByQuery(productInput);
-    this.setState({
-      filterAPI: API.results.map((product) => product.title),
-      test: false,
-    }, () => console.log(filterAPI));
+  callAPI = async ({ target }) => {
+    const { productInput } = this.state;
+    const nameCategory = target.name;
+    console.log(target);
+    if (target.type === 'button') {
+      console.log('entrou no if');
+      const API = await getProductByQuery(nameCategory);
+      this.setState({
+        filterAPI: API.results.map((product) => product.title),
+        test: false,
+      });
+    } else {
+      console.log('entrou no else');
+      const API = await getProductByQuery(productInput);
+      this.setState({
+        filterAPI: API.results.map((product) => product.title),
+        test: false,
+      });
+    }
   };
 
   // Botão de acesso desabilata quando não tem valor nos inputs
@@ -64,6 +76,8 @@ class Home extends React.Component {
               key={ category.id }
               type="button"
               data-testid="category"
+              name={ category.name }
+              onClick={ this.callAPI }
             >
               {category.name}
 
