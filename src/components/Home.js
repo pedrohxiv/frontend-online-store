@@ -1,20 +1,20 @@
 import React from 'react';
-import { getCategories } from '../services/api';
+import { getProductByQuery } from '../services/api';
 
 class Home extends React.Component {
   state = {
     productInput: '',
     buttonDisable: true,
     filterAPI: [],
-    readyClick: 0,
+    test: true,
   };
 
   callAPI = async () => {
-    const { productInput, filterAPI, readyClick } = this.state;
-    const API = await getCategories();
+    const { productInput, filterAPI } = this.state;
+    const API = await getProductByQuery(productInput);
     this.setState({
-      filterAPI: API.filter((product) => productInput.includes(product.name)),
-      readyClick: readyClick + 1,
+      filterAPI: API.results.map((product) => product.title),
+      test: false,
     }, () => console.log(filterAPI));
   };
 
@@ -45,7 +45,7 @@ class Home extends React.Component {
   };
 
   render() {
-    const { buttonDisable, filterAPI, readyClick } = this.state;
+    const { buttonDisable, filterAPI, test } = this.state;
     return (
       <div>
         <p data-testid="home-initial-message">
@@ -66,13 +66,18 @@ class Home extends React.Component {
           Buscar
         </button>
         {
-          filterAPI.length === 0 && readyClick !== 0
+          test
             ? <span>Nenhum produto foi encontrado</span>
             : (
               <ul>
-                {filterAPI.map((product) => {
-                  <li>{product.id}</li>;
-                })}
+                {filterAPI.map((product, index) => (
+                  <li
+                    data-testid="product"
+                    key={ `${index} ${product}` }
+                  >
+                    {product}
+                  </li>
+                ))}
               </ul>
             )
         }
@@ -82,4 +87,3 @@ class Home extends React.Component {
 }
 
 export default Home;
-
