@@ -1,5 +1,7 @@
 import React from 'react';
 import { getProductByQuery } from '../services/api';
+import { Link } from 'react-router-dom';
+
 
 class Home extends React.Component {
   state = {
@@ -65,6 +67,7 @@ class Home extends React.Component {
         >
           Buscar
         </button>
+        <Link data-testid="shopping-cart-button" to="/cart">Carrinho</Link>
         {
           test
             ? <span>Nenhum produto foi encontrado</span>
