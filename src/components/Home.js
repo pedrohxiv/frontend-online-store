@@ -9,6 +9,8 @@ class Home extends React.Component {
     buttonDisable: true,
     filterAPI: [],
     test: true,
+    shopCartTitle: [],
+    shopCartPrice: [],
   };
 
   async componentDidMount() {
@@ -16,22 +18,22 @@ class Home extends React.Component {
     this.setState({ categorys: valores });
   }
 
+  // Renderiza os elementos na tela
   callAPI = async ({ target }) => {
     const { productInput } = this.state;
     const nameCategory = target.name;
-    console.log(target);
+    // Caso clique nos botões de categoria, filtra a lista em relação ao botão clicado
     if (target.type === 'button') {
-      console.log('entrou no if');
       const API = await getProductByQuery(nameCategory);
       this.setState({
-        filterAPI: API.results.map((product) => product.title),
+        filterAPI: API.results.map((product) => product),
         test: false,
       });
+    // Busca pela API o produto digitado
     } else {
-      console.log('entrou no else');
       const API = await getProductByQuery(productInput);
       this.setState({
-        filterAPI: API.results.map((product) => product.title),
+        filterAPI: API.results.map((product) => product),
         test: false,
       });
     }
@@ -60,6 +62,27 @@ class Home extends React.Component {
         // Realiza a validação do botão cada vez que alterar algo na tela
         this.buttonDisable();
       },
+    );
+  };
+
+  // Adiciona no localStorage
+  handleUpdateLocalStorage = () => {
+    const { shopCartTitle, shopCartPrice } = this.state;
+    localStorage.setItem('Titulos', JSON.stringify(shopCartTitle));
+    localStorage.setItem('Preços', JSON.stringify(shopCartPrice));
+  };
+
+  // Adiciona o item clicado no state shopCart
+  addShopCart = (event) => {
+    const { children } = event.target.parentNode;
+    const productTitle = children[0].innerHTML;
+    const productPrice = children[1].innerHTML;
+    this.setState(
+      (prevState) => ({
+        shopCartTitle: [...prevState.shopCartTitle, productTitle],
+        shopCartPrice: [...prevState.shopCartPrice, productPrice],
+      }),
+      this.handleUpdateLocalStorage,
     );
   };
 
@@ -105,12 +128,19 @@ class Home extends React.Component {
             : (
               <ul>
                 {filterAPI.map((product, index) => (
-                  <li
-                    data-testid="product"
-                    key={ `${index} ${product}` }
-                  >
-                    {product}
-                  </li>
+                  <div key={ `${index} ${product}` }>
+                    <li data-testid="product">
+                      {product.title}
+                    </li>
+                    <p>{`R$${product.price}`}</p>
+                    <button
+                      type="button"
+                      data-testid="product-add-to-cart"
+                      onClick={ this.addShopCart }
+                    >
+                      Adicionar ao carrinho
+                    </button>
+                  </div>
                 ))}
               </ul>
             )
