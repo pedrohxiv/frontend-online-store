@@ -9,13 +9,18 @@ class Home extends React.Component {
     buttonDisable: true,
     filterAPI: [],
     test: true,
-    shopCartTitle: [],
-    shopCartPrice: [],
+    shopCart: {
+      shopCartId: [],
+      shopCartTitle: [],
+      shopCartPrice: [],
+      shopCartQuantity: [],
+    },
   };
 
   async componentDidMount() {
     const valores = await getCategories();
     this.setState({ categorys: valores });
+    this.getLocalStorage();
   }
 
   // Renderiza os elementos na tela
@@ -65,25 +70,74 @@ class Home extends React.Component {
     );
   };
 
+  // Pega os valores do localStorage
+  getLocalStorage = () => {
+    const shopCartLS = JSON.parse(localStorage.getItem('shopCart'));
+    if (shopCartLS !== null) {
+      this.setState({
+        shopCart: {
+          shopCartQuantity: shopCartLS.shopCartQuantity,
+          shopCartId: shopCartLS.shopCartId,
+          shopCartTitle: shopCartLS.shopCartTitle,
+          shopCartPrice: shopCartLS.shopCartPrice,
+        },
+      });
+    }
+  };
+
   // Adiciona no localStorage
   handleUpdateLocalStorage = () => {
-    const { shopCartTitle, shopCartPrice } = this.state;
-    localStorage.setItem('Titulos', JSON.stringify(shopCartTitle));
-    localStorage.setItem('Preços', JSON.stringify(shopCartPrice));
+    const { shopCart } = this.state;
+    localStorage.setItem('shopCart', JSON.stringify(shopCart));
   };
 
   // Adiciona o item clicado no state shopCart
   addShopCart = (event) => {
     const { children } = event.target.parentNode;
-    const productTitle = children[0].innerHTML;
-    const productPrice = children[1].innerHTML;
-    this.setState(
-      (prevState) => ({
-        shopCartTitle: [...prevState.shopCartTitle, productTitle],
-        shopCartPrice: [...prevState.shopCartPrice, productPrice],
-      }),
-      this.handleUpdateLocalStorage,
-    );
+    const { shopCart: {
+      shopCartQuantity, shopCartPrice, shopCartId, shopCartTitle,
+    } } = this.state;
+    const productId = children[0].innerHTML;
+    const productTitle = children[1].innerHTML;
+    const productPrice = Number((parseFloat((children[2].innerHTML)
+      .split('$')[1])).toFixed(2));
+    const matchId = this.filterShopCard(productId);
+    if (matchId !== false) {
+      shopCartQuantity[matchId] += 1;
+      shopCartPrice[matchId] += productPrice;
+      this.setState({
+        shopCart: {
+          shopCartQuantity,
+          shopCartId,
+          shopCartTitle,
+          shopCartPrice,
+        },
+      }, this.handleUpdateLocalStorage);
+    } else {
+      this.setState(
+        (prevState) => ({
+          shopCart: {
+            shopCartQuantity: [...prevState.shopCart.shopCartQuantity, 1],
+            shopCartId: [...prevState.shopCart.shopCartId, productId],
+            shopCartTitle: [...prevState.shopCart.shopCartTitle, productTitle],
+            shopCartPrice: [...prevState.shopCart.shopCartPrice, productPrice],
+          },
+        }),
+        this.handleUpdateLocalStorage,
+      );
+    }
+  };
+
+  filterShopCard = (id) => {
+    const { shopCart: { shopCartId } } = this.state;
+    const existsId = shopCartId.includes(id);
+    let indexId = false;
+    if (existsId) {
+      indexId = shopCartId.findIndex((element) => (element === id));
+    } else {
+      return indexId;
+    }
+    return indexId;
   };
 
   render() {
@@ -127,8 +181,9 @@ class Home extends React.Component {
             ? <span>Nenhum produto foi encontrado</span>
             : (
               <ul>
-                {filterAPI.map((product, index) => (
-                  <div key={ `${index} ${product}` }>
+                {filterAPI.map((product) => (
+                  <div key={ `${product.id}` }>
+                    <p>{product.id}</p>
                     <li data-testid="product">
                       {product.title}
                     </li>
