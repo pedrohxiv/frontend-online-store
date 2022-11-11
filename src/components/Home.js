@@ -9,29 +9,31 @@ class Home extends React.Component {
     buttonDisable: true,
     filterAPI: [],
     test: true,
+
   };
 
   async componentDidMount() {
     const valores = await getCategories();
     this.setState({ categorys: valores });
+    // console.log(valores);
   }
 
   callAPI = async ({ target }) => {
     const { productInput } = this.state;
     const nameCategory = target.name;
-    console.log(target);
+    // console.log(target);
     if (target.type === 'button') {
-      console.log('entrou no if');
+      // console.log('entrou no if');
       const API = await getProductByQuery(nameCategory);
       this.setState({
-        filterAPI: API.results.map((product) => product.title),
+        filterAPI: API.results.map((product) => product),
         test: false,
       });
     } else {
-      console.log('entrou no else');
+      // console.log('entrou no else');
       const API = await getProductByQuery(productInput);
       this.setState({
-        filterAPI: API.results.map((product) => product.title),
+        filterAPI: API.results.map((product) => product),
         test: false,
       });
     }
@@ -80,7 +82,7 @@ class Home extends React.Component {
               onClick={ this.callAPI }
             >
               {category.name}
-
+              {console.log(category) }
             </button>
           ))}
         </div>
@@ -105,12 +107,20 @@ class Home extends React.Component {
             : (
               <ul>
                 {filterAPI.map((product, index) => (
-                  <li
-                    data-testid="product"
-                    key={ `${index} ${product}` }
-                  >
-                    {product}
-                  </li>
+                  <div data-testid="product" key={ index }>
+                    <Link
+                      to={ `/products-details/${product.id}` }
+                      data-testid="product-detail-link"
+                    >
+                      <img src={ product.thumbnail } alt={ product.title } />
+                      <li
+                        key={ `${index} ${product}` }
+                      >
+                        {product.name}
+                        {product.title}
+                      </li>
+                    </Link>
+                  </div>
                 ))}
               </ul>
             )
