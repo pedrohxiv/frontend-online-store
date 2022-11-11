@@ -27,16 +27,16 @@ class Home extends React.Component {
     const { productInput } = this.state;
     const nameCategory = target.name;
     const idCategory = target.id;
-    // Caso clique nos botões de categoria, filtra a lista em relação ao botão clicado
-    if (target.type === 'button') {
-      const API = await getProductsFromCategoryAndQuery(idCategory, nameCategory);
+    // Busca pela API o produto digitado
+    if (target.id === 'buttonInput') {
+      const API = await getProductByQuery(productInput);
       this.setState({
         filterAPI: API.results.map((product) => product),
         test: false,
       });
-    // Busca pela API o produto digitado
+    // Caso clique nos botões de categoria, filtra a lista em relação ao botão clicado
     } else {
-      const API = await getProductByQuery(productInput);
+      const API = await getProductsFromCategoryAndQuery(idCategory, nameCategory);
       this.setState({
         filterAPI: API.results.map((product) => product),
         test: false,
@@ -93,10 +93,10 @@ class Home extends React.Component {
     const { shopCart } = this.state;
     const obj = {
       shopCartQuantity: quantity,
-      shopCartPrice: Number((parseFloat((children[2].innerHTML)
+      shopCartPrice: Number((parseFloat((children[3].innerHTML)
         .split('$')[1])).toFixed(2)),
-      shopCartId: children[0].innerHTML,
-      shopCartTitle: children[1].innerHTML,
+      shopCartId: children[1].innerHTML,
+      shopCartTitle: children[2].innerHTML,
     };
     const idElement = this.filterShopCard(obj.shopCartId);
     if (idElement === false) {
@@ -135,12 +135,12 @@ class Home extends React.Component {
             <button
               key={ category.id }
               type="button"
+              id="buttonCategory"
               data-testid="category"
               name={ category.name }
               onClick={ this.callAPI }
             >
               {category.name}
-
             </button>
           ))}
         </div>
@@ -154,6 +154,7 @@ class Home extends React.Component {
           type="button"
           data-testid="query-button"
           disabled={ buttonDisable }
+          id="buttonInput"
           onClick={ this.callAPI }
         >
           Buscar
@@ -164,7 +165,28 @@ class Home extends React.Component {
             ? <span>Nenhum produto foi encontrado</span>
             : (
               <ul>
-                {filterAPI.map((product) => (
+                {filterAPI.map((product, index) => (
+                  <div data-testid="product" key={ index }>
+                    <Link
+                      to={ `/products-details/${product.id}` }
+                      data-testid="product-detail-link"
+                    >
+                      <img src={ product.thumbnail } alt={ product.title } />
+                    </Link>
+                    <p>{product.id}</p>
+                    <li>
+                      {product.title}
+                    </li>
+                    <p>{`R$${product.price}`}</p>
+                    <button
+                      type="button"
+                      id={ product.id }
+                      data-testid="product-add-to-cart"
+                      onClick={ this.addShopCart }
+                    >
+                      Adicionar ao carrinho
+                    </button>
+                    {/* {filterAPI.map((product) => (
                   <div key={ `${product.id}` }>
                     <p>{product.id}</p>
                     <li data-testid="product">
@@ -178,7 +200,7 @@ class Home extends React.Component {
                       onClick={ this.addShopCart }
                     >
                       Adicionar ao carrinho
-                    </button>
+                    </button></ul> */}
                   </div>
                 ))}
               </ul>
