@@ -26,9 +26,10 @@ class Home extends React.Component {
   callAPI = async ({ target }) => {
     const { productInput } = this.state;
     const nameCategory = target.name;
+    const idCategory = target.id;
     // Caso clique nos botões de categoria, filtra a lista em relação ao botão clicado
     if (target.type === 'button') {
-      const API = await getProductsFromCategoryAndQuery(nameCategory);
+      const API = await getProductsFromCategoryAndQuery(idCategory, nameCategory);
       this.setState({
         filterAPI: API.results.map((product) => product),
         test: false,
@@ -172,6 +173,7 @@ class Home extends React.Component {
                     <p>{`R$${product.price}`}</p>
                     <button
                       type="button"
+                      id={ product.id }
                       data-testid="product-add-to-cart"
                       onClick={ this.addShopCart }
                     >

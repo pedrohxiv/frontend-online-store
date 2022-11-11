@@ -23,11 +23,41 @@ export default class ShoppingCart extends Component {
   // Remove o item do carrinho
   removeItem = ({ target }) => {
     const { cartItems } = this.state;
-    const selectedItem = target.parentNode.children[1].innerText;
+    const selectedItem = target.id;
     const newCartItems = cartItems
-      .filter((cartItem) => cartItem.shopCartTitle !== selectedItem);
+      .filter((cartItem) => cartItem.shopCartId !== selectedItem);
     this.setState({ cartItems: newCartItems });
-    localStorage.setItem('shopCart', JSON.stringify(cartItems));
+    localStorage.setItem('shopCart', JSON.stringify(newCartItems));
+  };
+
+  addProductItem = ({ target }) => {
+    const { cartItems } = this.state;
+    const selectedItem = target.id;
+    const newCartItems = [...cartItems];
+    const item = newCartItems.find((cartItem) => cartItem.shopCartId === selectedItem);
+    item.shopCartQuantity += 1;
+    this.setState({ cartItems: newCartItems });
+    localStorage.setItem('shopCart', JSON.stringify(newCartItems));
+  };
+
+  removeProductItem = ({ target }) => {
+    const { cartItems } = this.state;
+    const selectedItem = target.id;
+    const newCartItems = [...cartItems];
+    const item = newCartItems.find((cartItem) => cartItem.shopCartId === selectedItem);
+    item.shopCartQuantity -= 1;
+    // if (item.qtd < 1) {
+    //   const arrFiltered = newCartItems
+    //     .filter((cartItem) => cartItem.name !== selectedItem);
+    //   this.setState({ cartItems: arrFiltered });
+    // } else {
+    //   this.setState({ cartItems: newCartItems });
+    // }
+    if (item.shopCartQuantity <= 1) {
+      item.shopCartQuantity = 1;
+    }
+    this.setState({ cartItems: newCartItems });
+    localStorage.setItem('shopCart', JSON.stringify(newCartItems));
   };
 
   render() {
@@ -51,6 +81,7 @@ export default class ShoppingCart extends Component {
                   <button
                     data-testid="remove-product"
                     type="button"
+                    id={ cartItem.shopCartId }
                     onClick={ this.removeItem }
                   >
                     Excluir
@@ -63,6 +94,7 @@ export default class ShoppingCart extends Component {
                   <button
                     data-testid="product-decrease-quantity"
                     type="button"
+                    id={ cartItem.shopCartId }
                     onClick={ this.removeProductItem }
                   >
                     -
@@ -75,6 +107,7 @@ export default class ShoppingCart extends Component {
                   <button
                     data-testid="product-increase-quantity"
                     type="button"
+                    id={ cartItem.shopCartId }
                     onClick={ this.addProductItem }
                   >
                     +
