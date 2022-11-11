@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { getCategories, getProductByQuery } from '../services/api';
+import { getCategories, getProductByQuery, getProductsFromCategoryAndQuery } from '../services/api';
 
 class Home extends React.Component {
   state = {
@@ -9,12 +9,7 @@ class Home extends React.Component {
     buttonDisable: true,
     filterAPI: [],
     test: true,
-    shopCart: {
-      shopCartId: [],
-      shopCartTitle: [],
-      shopCartPrice: [],
-      shopCartQuantity: [],
-    },
+    shopCart: [],
   };
 
   async componentDidMount() {
@@ -29,7 +24,7 @@ class Home extends React.Component {
     const nameCategory = target.name;
     // Caso clique nos botões de categoria, filtra a lista em relação ao botão clicado
     if (target.type === 'button') {
-      const API = await getProductByQuery(nameCategory);
+      const API = await getProductsFromCategoryAndQuery(nameCategory);
       this.setState({
         filterAPI: API.results.map((product) => product),
         test: false,
@@ -74,14 +69,9 @@ class Home extends React.Component {
   getLocalStorage = () => {
     const shopCartLS = JSON.parse(localStorage.getItem('shopCart'));
     if (shopCartLS !== null) {
-      this.setState({
-        shopCart: {
-          shopCartQuantity: shopCartLS.shopCartQuantity,
-          shopCartId: shopCartLS.shopCartId,
-          shopCartTitle: shopCartLS.shopCartTitle,
-          shopCartPrice: shopCartLS.shopCartPrice,
-        },
-      });
+      this.setState((prevState) => ({
+        shopCart: [].concat(...prevState.shopCart, shopCartLS),
+      }));
     }
   };
 
@@ -94,50 +84,38 @@ class Home extends React.Component {
   // Adiciona o item clicado no state shopCart
   addShopCart = (event) => {
     const { children } = event.target.parentNode;
-    const { shopCart: {
-      shopCartQuantity, shopCartPrice, shopCartId, shopCartTitle,
-    } } = this.state;
-    const productId = children[0].innerHTML;
-    const productTitle = children[1].innerHTML;
-    const productPrice = Number((parseFloat((children[2].innerHTML)
-      .split('$')[1])).toFixed(2));
-    const matchId = this.filterShopCard(productId);
-    if (matchId !== false) {
-      shopCartQuantity[matchId] += 1;
-      shopCartPrice[matchId] += productPrice;
-      this.setState({
-        shopCart: {
-          shopCartQuantity,
-          shopCartId,
-          shopCartTitle,
-          shopCartPrice,
-        },
-      }, this.handleUpdateLocalStorage);
+    const quantity = 1;
+    const { shopCart } = this.state;
+    const obj = {
+      shopCartQuantity: quantity,
+      shopCartPrice: Number((parseFloat((children[2].innerHTML)
+        .split('$')[1])).toFixed(2)),
+      shopCartId: children[0].innerHTML,
+      shopCartTitle: children[1].innerHTML,
+    };
+    const idElement = this.filterShopCard(obj.shopCartId);
+    if (idElement === false) {
+      this.setState((prevState) => ({
+        shopCart: [].concat(...prevState.shopCart, obj),
+      }), this.handleUpdateLocalStorage);
     } else {
-      this.setState(
-        (prevState) => ({
-          shopCart: {
-            shopCartQuantity: [...prevState.shopCart.shopCartQuantity, 1],
-            shopCartId: [...prevState.shopCart.shopCartId, productId],
-            shopCartTitle: [...prevState.shopCart.shopCartTitle, productTitle],
-            shopCartPrice: [...prevState.shopCart.shopCartPrice, productPrice],
-          },
-        }),
-        this.handleUpdateLocalStorage,
-      );
+      shopCart[idElement].shopCartQuantity += 1;
+      this.setState({
+        shopCart,
+      }, this.handleUpdateLocalStorage);
     }
   };
 
   filterShopCard = (id) => {
-    const { shopCart: { shopCartId } } = this.state;
-    const existsId = shopCartId.includes(id);
-    let indexId = false;
-    if (existsId) {
-      indexId = shopCartId.findIndex((element) => (element === id));
-    } else {
-      return indexId;
+    const { shopCart } = this.state;
+    const newShopCart = [...shopCart];
+    const findId = newShopCart
+      .find((product) => product.shopCartId === id);
+    const index = newShopCart.findIndex((productIndex) => productIndex.shopCartId === id);
+    if (findId === undefined) {
+      return false;
     }
-    return indexId;
+    return index;
   };
 
   render() {

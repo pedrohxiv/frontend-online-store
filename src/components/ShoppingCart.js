@@ -12,25 +12,27 @@ export default class ShoppingCart extends Component {
 
   // Pegando os valores do localStorage
   getLocalStorage = () => {
-    const shopCartQuantity = JSON.parse(localStorage.getItem('Quantity'));
-    const shopCartTitle = JSON.parse(localStorage.getItem('Titles'));
-    // const shopCartPrice = JSON.parse(localStorage.getItem('Prices'));
-    if (shopCartTitle !== null) {
-      for (let i = 0; i < shopCartTitle.length; i += 1) {
-        this.setState(
-          (prevState) => ({
-            cartItems: [...prevState.cartItems, shopCartTitle[i]],
-            cartQuantity: [...prevState.cartQuantity, shopCartQuantity[i]],
-          }),
-        );
-      }
+    const shopCartLS = JSON.parse(localStorage.getItem('shopCart'));
+    if (shopCartLS !== null) {
+      this.setState((prevState) => ({
+        cartItems: [].concat(...prevState.cartItems, shopCartLS),
+      }));
     }
   };
 
+  // Remove o item do carrinho
+  removeItem = ({ target }) => {
+    const { cartItems } = this.state;
+    const selectedItem = target.parentNode.children[1].innerText;
+    const newCartItems = cartItems
+      .filter((cartItem) => cartItem.shopCartTitle !== selectedItem);
+    this.setState({ cartItems: newCartItems });
+    localStorage.setItem('shopCart', JSON.stringify(cartItems));
+  };
+
   render() {
-    const { cartItems, cartQuantity } = this.state;
+    const { cartItems } = this.state;
     const cartItemsLength = cartItems.length;
-    console.log(cartItems);
     return (
       <div>
         <Link to="/">Home</Link>
@@ -44,22 +46,42 @@ export default class ShoppingCart extends Component {
               </span>
             )
             : (
-              <ul>
-                {cartItems.map((item, index) => (
-                  <div key={ `${index} ${item}` }>
-                    <li
-                      data-testid="shopping-cart-product-name"
-                    >
-                      {item}
-                    </li>
-                    <p
-                      data-testid="shopping-cart-product-quantity"
-                    >
-                      {cartQuantity[index]}
-                    </p>
-                  </div>
-                ))}
-              </ul>
+              cartItems.map((cartItem) => (
+                <div key={ cartItem.shopCartId } style={ { display: 'flex' } }>
+                  <button
+                    data-testid="remove-product"
+                    type="button"
+                    onClick={ this.removeItem }
+                  >
+                    Excluir
+                  </button>
+                  <p
+                    data-testid="shopping-cart-product-name"
+                  >
+                    {cartItem.shopCartTitle}
+                  </p>
+                  <button
+                    data-testid="product-decrease-quantity"
+                    type="button"
+                    onClick={ this.removeProductItem }
+                  >
+                    -
+                  </button>
+                  <p
+                    data-testid="shopping-cart-product-quantity"
+                  >
+                    {cartItem.shopCartQuantity}
+                  </p>
+                  <button
+                    data-testid="product-increase-quantity"
+                    type="button"
+                    onClick={ this.addProductItem }
+                  >
+                    +
+                  </button>
+                  <p>{`R$${cartItem.shopCartPrice}`}</p>
+                </div>
+              ))
             )
         }
       </div>
