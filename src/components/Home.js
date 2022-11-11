@@ -1,6 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { getCategories, getProductByQuery, getProductsFromCategoryAndQuery } from '../services/api';
+import {
+  getCategories,
+  getProductByQuery,
+  getProductsFromCategoryAndQuery,
+} from '../services/api';
 
 class Home extends React.Component {
   state = {
