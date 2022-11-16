@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import ProductReview from './ProductReview';
 import { getProductById } from '../services/api';
 
 class ProductDetails extends React.Component {
@@ -34,6 +35,7 @@ class ProductDetails extends React.Component {
             Ir ao carrinho!!
           </button>
         </Link>
+        <ProductReview productId={ product.id } />
       </>
 
     );
